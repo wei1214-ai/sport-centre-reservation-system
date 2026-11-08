@@ -1,0 +1,145 @@
+@import "tailwindcss";
+
+:root {
+  --page: #f5f7fa;
+  --surface: #ffffff;
+  --ink: #172033;
+  --ink-strong: #0f1523;
+  --subtle: #738096;
+  --line: #e8ecf2;
+  --brand: #315efb;
+  --brand-hover: #2549e0;
+  --brand-soft: #dce5ff;
+  --energy: #ff9f43;
+  --energy-soft: #fff3e6;
+  --success: #16a34a;
+  --success-soft: #eaf7ef;
+  --warning: #b45309;
+  --warning-soft: #fdf3e7;
+  --danger: #dc2626;
+  --danger-soft: #fdecec;
+  --radius-lg: 0.9rem;
+  --radius-md: 0.65rem;
+  --radius-sm: 0.45rem;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-strong: var(--ink-strong);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-energy: var(--energy);
+  --color-energy-soft: var(--energy-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --radius-token-lg: var(--radius-lg);
+  --radius-token-md: var(--radius-md);
+  --radius-token-sm: var(--radius-sm);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+/* ---------- Shared primitives ---------- */
+
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  font-weight: 550;
+  color: var(--ink);
+}
+
+.field-hint {
+  font-size: 0.72rem;
+  color: var(--subtle);
+}
+
+.input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.input::placeholder {
+  color: color-mix(in srgb, var(--subtle) 70%, transparent);
+}
+
+.input:focus-visible {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.input:disabled {
+  background: var(--page);
+  color: var(--subtle);
+}
+
+.input-error,
+.input[data-error="true"] {
+  border-color: var(--danger);
+}
+
+.input[data-error="true"]:focus-visible {
+  box-shadow: 0 0 0 3px var(--danger-soft);
+}
+
+.section-title {
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.muted {
+  color: var(--subtle);
+}
+
+.ghost-link {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.ghost-link:hover {
+  color: var(--brand-hover);
+}
