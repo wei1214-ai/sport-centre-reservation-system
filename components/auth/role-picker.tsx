@@ -43,9 +43,45 @@ export function RolePicker({
   onChange: (role: UserRole) => void;
   compact?: boolean;
 }) {
+  if (compact) {
+    return (
+      <div
+        className="grid grid-cols-3 gap-1 rounded-full bg-[#eeece6] p-1"
+        role="radiogroup"
+        aria-label="Account role"
+      >
+        {OPTIONS.map((option) => {
+          const checked = option.value === value;
+          return (
+            <label
+              key={option.value}
+              className={cn(
+                "flex cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 py-2 text-[0.8rem] font-medium transition-all",
+                checked
+                  ? "bg-ink text-white shadow-[0_2px_8px_rgba(12,12,13,0.18)]"
+                  : "text-subtle hover:text-ink",
+              )}
+            >
+              <input
+                type="radio"
+                name="role"
+                value={option.value}
+                checked={checked}
+                onChange={() => onChange(option.value)}
+                className="sr-only"
+              />
+              <option.icon className="size-3.5" />
+              {option.title}
+            </label>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div
-      className={cn("grid gap-2", compact ? "grid-cols-3" : "grid-cols-1 sm:grid-cols-3")}
+      className="grid gap-2 sm:grid-cols-3"
       role="radiogroup"
       aria-label="Account role"
     >
@@ -55,11 +91,10 @@ export function RolePicker({
           <label
             key={option.value}
             className={cn(
-              "block cursor-pointer gap-2 rounded-[var(--radius-md)] border p-3 transition-colors focus-within:box-shadow-[0_0_0_3px_var(--brand-soft)]",
+              "flex cursor-pointer flex-col gap-4 rounded-2xl border p-4 transition-all",
               checked
-                ? "border-brand bg-brand-soft/40"
-                : "border-line bg-surface hover:border-brand/40",
-              compact && "p-2.5 text-center",
+                ? "border-ink bg-ink text-white shadow-[0_12px_32px_rgba(12,12,13,0.18)]"
+                : "border-line bg-white/60 hover:border-ink/20 hover:bg-white",
             )}
           >
             <input
@@ -71,25 +106,20 @@ export function RolePicker({
               className="sr-only"
             />
             <option.icon
-              className={cn(
-                "size-4.5 shrink-0",
-                checked ? "text-brand" : "text-subtle",
-              )}
+              className={cn("size-4.5", checked ? "text-white" : "text-ink")}
             />
             <div className="min-w-0">
-              <p
-                className={cn(
-                  "text-[0.85rem] font-semibold",
-                  checked ? "text-brand" : "text-ink",
-                )}
-              >
+              <p className="text-[0.85rem] font-medium">
                 {option.title}
               </p>
-              {!compact ? (
-                <p className="mt-0.5 text-[0.72rem] leading-snug text-subtle">
-                  {option.description}
-                </p>
-              ) : null}
+              <p
+                className={cn(
+                  "mt-1 text-[0.72rem] leading-snug",
+                  checked ? "text-white/60" : "text-subtle",
+                )}
+              >
+                {option.description}
+              </p>
             </div>
           </label>
         );

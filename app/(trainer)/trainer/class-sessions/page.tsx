@@ -50,7 +50,7 @@ export default async function ClassSessionsPage() {
   };
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="Class sessions"
         subtitle="Sessions reserve their facility — conflicts with bookings and maintenance are rejected server-side."

@@ -6,7 +6,7 @@ export const metadata = { title: "Customer home" };
 
 export default async function CustomerHomePage() {
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="Customer area"
         subtitle="Facility booking and classes arrive in the next milestone."

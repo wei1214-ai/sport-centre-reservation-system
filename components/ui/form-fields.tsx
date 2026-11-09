@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ export const PasswordInput = React.forwardRef<
 >(function PasswordInput({ className, ...props }, ref) {
   const [visible, setVisible] = React.useState(false);
   return (
-    <span className="relative block">
+    <span className="relative block min-w-0">
       <Input
         ref={ref}
         type={visible ? "text" : "password"}
@@ -49,14 +49,24 @@ export function Textarea({ className, ...props }: React.ComponentProps<"textarea
   );
 }
 
-export function NativeSelect({ className, ...props }: React.ComponentProps<"select">) {
+export const NativeSelect = React.forwardRef<
+  HTMLSelectElement,
+  React.ComponentProps<"select">
+>(function NativeSelect({ className, ...props }, ref) {
   return (
-    <select
-      className={cn("input appearance-none bg-surface pr-8", className)}
-      {...props}
-    />
+    <span className="relative block w-full min-w-0">
+      <select
+        ref={ref}
+        className={cn("input w-full min-w-0 appearance-none bg-surface pr-10", className)}
+        {...props}
+      />
+      <ChevronDown
+        className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-subtle"
+        aria-hidden
+      />
+    </span>
   );
-}
+});
 
 export function Label({ className, ...props }: Omit<React.ComponentProps<"label">, "htmlFor">) {
   return (
@@ -85,7 +95,7 @@ export function Field({
   required?: boolean;
 }) {
   return (
-    <div className={cn("grid gap-1.5", className)}>
+    <div className={cn("grid min-w-0 items-start gap-1.5", className)}>
       {label ? (
         <label htmlFor={htmlFor} className="text-[0.8rem] font-medium text-ink">
           {label}

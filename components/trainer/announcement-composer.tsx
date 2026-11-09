@@ -50,7 +50,7 @@ export function AnnouncementComposer({ classes }: { classes: ClassOption[] }) {
   return (
     <form onSubmit={onSubmit} className="surface grid gap-3 p-4">
       {serverError ? (
-        <p className="rounded-[var(--radius-md)] border border-danger/30 bg-danger-soft px-3 py-2 text-[0.8rem] text-danger">
+        <p className="rounded-2xl bg-danger-soft px-3.5 py-3 text-[0.8rem] text-danger">
           {serverError}
         </p>
       ) : null}

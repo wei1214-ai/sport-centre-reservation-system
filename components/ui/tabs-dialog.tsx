@@ -14,7 +14,7 @@ export function TabsList({ className, children }: { className?: string; children
   return (
     <TabsPrimitive.List
       className={cn(
-        "inline-flex w-full items-center gap-1 rounded-[var(--radius-md)] border border-line bg-page p-1 sm:w-auto",
+        "inline-flex w-full items-center gap-1 rounded-full bg-[#eeece6] p-1 sm:w-auto",
         className,
       )}
     >
@@ -36,8 +36,8 @@ export function TabsTrigger({
     <TabsPrimitive.Trigger
       value={value}
       className={cn(
-        "inline-flex flex-1 items-center justify-center gap-1.5 rounded-[calc(var(--radius-md)-0.2rem)] px-3 py-1.5 text-[0.82rem] font-medium text-subtle transition-colors sm:flex-none",
-        "data-[state=active]:bg-surface data-[state=active]:text-ink data-[state=active]:font-semibold data-[state=active]:shadow-[0_1px_2px_rgba(23,32,51,0.06)]",
+        "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-1.5 text-[0.8rem] font-medium text-subtle transition-colors sm:flex-none",
+        "data-[state=active]:bg-ink data-[state=active]:font-medium data-[state=active]:text-white",
         className,
       )}
     >
@@ -72,7 +72,6 @@ export function ConfirmDialog({
   confirmLabel = "Confirm",
   danger,
   onConfirm,
-  children,
 }: {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -81,22 +80,21 @@ export function ConfirmDialog({
   confirmLabel?: string;
   danger?: boolean;
   onConfirm: () => void;
-  children?: React.ReactNode;
 }) {
   return (
     <AlertDialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <AlertDialogPrimitive.Portal>
-        <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-ink/25 backdrop-blur-[2px]" />
-        <AlertDialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2.5rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[var(--radius-lg)] border border-line bg-surface p-5 shadow-xl focus:outline-none">
-          <AlertDialogPrimitive.Title className="text-base font-semibold text-ink">
+        <AlertDialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[#0c0c0d]/30 backdrop-blur-[6px]" />
+        <AlertDialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw_-_2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-[1.75rem] border border-white/70 bg-[#fbfaf7] p-6 shadow-[0_40px_120px_rgba(12,12,13,0.28)] focus:outline-none">
+          <AlertDialogPrimitive.Title className="text-[1.25rem] font-medium tracking-[-0.03em] text-ink">
             {title}
           </AlertDialogPrimitive.Title>
-          <AlertDialogPrimitive.Description className="mt-1 text-[0.85rem] text-subtle">
+          <AlertDialogPrimitive.Description className="mt-1.5 text-[0.85rem] leading-relaxed text-subtle">
             {description}
           </AlertDialogPrimitive.Description>
-          <div className="mt-4 flex items-center justify-end gap-2">
+          <div className="mt-6 flex items-center justify-end gap-2">
             <AlertDialogPrimitive.Cancel asChild>
-              <button className="h-9 rounded-[var(--radius-md)] border border-line bg-surface px-3.5 text-[0.85rem] font-medium text-ink hover:bg-page">
+              <button className="h-10 rounded-full border border-line bg-white/70 px-4 text-[0.83rem] font-medium text-ink transition-colors hover:bg-white">
                 Keep as is
               </button>
             </AlertDialogPrimitive.Cancel>
@@ -106,8 +104,8 @@ export function ConfirmDialog({
                 onConfirm();
               }}
               className={cn(
-                "h-9 rounded-[var(--radius-md)] px-3.5 text-[0.85rem] font-semibold text-white",
-                danger ? "bg-danger hover:bg-[color-mix(in_srgb,var(--danger)_88%,#000)]" : "bg-brand hover:bg-brand-hover",
+                "h-10 rounded-full px-4 text-[0.83rem] font-medium text-white transition-colors",
+                danger ? "bg-danger hover:bg-[#9a1d13]" : "bg-ink hover:bg-[#262628]",
               )}
             >
               {confirmLabel}

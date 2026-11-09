@@ -56,7 +56,7 @@ export default async function ClassDetailPage({
         <div>
           <Link
             href="/trainer/my-classes"
-            className="text-[0.78rem] font-medium text-brand hover:text-brand-hover"
+            className="text-[0.78rem] font-medium text-subtle transition-colors hover:text-ink"
           >
             ← My classes
           </Link>
@@ -96,22 +96,27 @@ export default async function ClassDetailPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2 md:grid-cols-4">
         <StatBlock
           label="Students"
           value={`${students}/${cls.capacity}`}
           hint={students >= cls.capacity ? "Class is full" : "active enrollments"}
           tone={students >= cls.capacity ? "energy" : "brand"}
         />
-        <StatBlock label="Monthly fee" value={`${formatPrice(cls.fee)}/mo`} hint={`${formatPrice(perSessionPrice(cls.fee, cls.sessions_per_month ?? 8))}/session`} />
+        <StatBlock
+          label="Monthly fee"
+          value={
+            <span className="whitespace-nowrap">
+              {formatPrice(cls.fee)}
+              <span className="ml-1 text-[0.48em] font-normal tracking-normal text-subtle">
+                /mo
+              </span>
+            </span>
+          }
+          hint={`${formatPrice(perSessionPrice(cls.fee, cls.sessions_per_month ?? 8))}/session`}
+        />
         <StatBlock label="Sessions/mo" value={cls.sessions_per_month ?? 8} hint={`${formatPrice(perSessionPrice(cls.fee, cls.sessions_per_month ?? 8))} each`} />
         <StatBlock label="Difficulty" value={cls.difficulty_level[0].toUpperCase() + cls.difficulty_level.slice(1)} hint={cls.status} />
-        <StatBlock
-          label="Upcoming"
-          value={classSessions.length}
-          hint="scheduled sessions"
-          tone="brandSoft"
-        />
       </div>
 
       <section className="grid gap-3">

@@ -79,7 +79,7 @@ export function InquiryCard({ inquiry }: { inquiry: InquiryCardData }) {
       <p className="line-clamp-2 text-[0.83rem] text-subtle">{inquiry.message}</p>
 
       {inquiry.reply ? (
-        <p className="rounded-[var(--radius-md)] bg-page px-3 py-2 text-[0.82rem] text-ink">
+        <p className="rounded-2xl bg-page px-3.5 py-2.5 text-[0.82rem] text-ink">
           <span className="font-semibold">Your reply · </span>
           {inquiry.reply}
         </p>
@@ -98,7 +98,7 @@ export function InquiryCard({ inquiry }: { inquiry: InquiryCardData }) {
           description={`${inquiry.customerName} · ${inquiry.customerEmail}`}
         >
           <div className="grid gap-3.5">
-            <div className="rounded-[var(--radius-md)] bg-page px-3 py-2.5">
+            <div className="rounded-2xl bg-page px-4 py-3">
               <p className="text-[0.72rem] font-semibold uppercase tracking-wide text-subtle">
                 Customer message
               </p>

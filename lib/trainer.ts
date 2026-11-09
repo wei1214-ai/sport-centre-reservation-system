@@ -81,7 +81,7 @@ export async function attachFacilities<
   const facilityIds = [...new Set(rows.map((r) => r.facility_id))].filter(
     (id): id is string => Boolean(id),
   );
-  let facilities: Map<string, Pick<Facility, "id" | "name">> = new Map();
+  const facilities: Map<string, Pick<Facility, "id" | "name">> = new Map();
   if (facilityIds.length) {
     const { data: found } = await supabase
       .schema("public")

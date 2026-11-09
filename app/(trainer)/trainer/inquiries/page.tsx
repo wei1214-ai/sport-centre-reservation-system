@@ -30,7 +30,7 @@ export default async function InquiriesPage() {
   });
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="Inquiries"
         subtitle="Pre-enrollment questions from customers. Replies notify the customer."

@@ -5,28 +5,28 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius-md)] font-semibold transition-colors duration-100 disabled:pointer-events-none disabled:opacity-60 focus-visible:outline-none focus-visible:box-shadow-[0_0_0_3px_var(--brand-soft)]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 focus-visible:ring-offset-2 focus-visible:ring-offset-page active:scale-[0.985]",
   {
     variants: {
       variant: {
-        brand:
-          "bg-brand text-white hover:bg-brand-hover",
+        brand: "bg-ink text-white hover:bg-[#262628]",
         outline:
-          "border border-line bg-surface text-ink hover:border-brand/40 hover:text-brand",
-        subtle:
-          "bg-brand-soft text-brand hover:bg-[color-mix(in_srgb,var(--brand-soft)_75%,#fff)]",
-        ghost:
-          "text-subtle hover:text-ink hover:bg-page",
+          "border border-line bg-white/70 text-ink hover:border-ink/15 hover:bg-white",
+        subtle: "bg-[#efede7] text-ink hover:bg-[#e7e4dc]",
+        ghost: "text-subtle hover:bg-ink/[0.045] hover:text-ink",
         danger:
-          "border border-[color-mix(in_srgb,var(--danger)_25%,transparent)] bg-danger-soft text-danger hover:bg-[color-mix(in_srgb,var(--danger-soft)_70%,#fff)]",
+          "bg-danger-soft text-danger hover:bg-[color-mix(in_srgb,var(--danger-soft)_72%,#fff)]",
         energy:
-          "bg-energy text-[#23160a] hover:brightness-95",
+          "bg-energy-soft text-warning hover:bg-[color-mix(in_srgb,var(--energy-soft)_70%,#fff)]",
+        inverse: "bg-white text-ink hover:bg-white/90",
+        glass:
+          "border border-white/75 bg-white/50 text-ink backdrop-blur-md hover:bg-white/75",
       },
       size: {
-        sm: "h-8 px-3 text-[0.8rem]",
-        md: "h-9.5 px-4 text-[0.9rem]",
-        lg: "h-11 px-5 text-[0.95rem]",
-        icon: "size-9 p-0",
+        sm: "h-8 px-3.5 text-[0.78rem]",
+        md: "h-10 px-5 text-[0.85rem]",
+        lg: "h-12 px-6 text-[0.9rem]",
+        icon: "size-10 p-0",
         iconSm: "size-8 p-0",
       },
     },

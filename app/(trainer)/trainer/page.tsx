@@ -20,7 +20,7 @@ export default async function TrainerHomePage() {
 
   if (!trainer) {
     return (
-      <div className="grid gap-5">
+      <div className="grid gap-7">
         <PageHeader title={`Welcome, ${profile.full_name.split(" ")[0]}`} subtitle="Trainer workspace" />
         <EmptyState
           title="Trainer profile missing"
@@ -55,7 +55,7 @@ export default async function TrainerHomePage() {
   const facilityNames = new Map(facilities.map((f) => [f.id, f.name]));
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title={`Welcome back, ${profile.full_name.split(" ")[0]}`}
         subtitle="Your classes, sessions and customer conversations at a glance."

@@ -26,7 +26,7 @@ export default async function MyClassesPage() {
   const totalStudents = enrollmentCounts.get("__total__") ?? 0;
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="My classes"
         subtitle={`${active_count(classes)} active · ${totalStudents} enrolled students`}
@@ -55,12 +55,11 @@ export default async function MyClassesPage() {
             const students = enrollmentCounts.get(cls.id) ?? 0;
             const full = students >= cls.capacity;
             return (
-              <Link
+              <div
                 key={cls.id}
-                href={`/trainer/my-classes/${cls.id}`}
                 className="surface group flex flex-wrap items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:border-brand/40"
               >
-                <div className="min-w-0">
+                <Link href={`/trainer/my-classes/${cls.id}`} className="min-w-0 flex-1">
                   <p className="truncate text-[0.92rem] font-semibold text-ink group-hover:text-brand">
                     {cls.title}
                   </p>
@@ -69,15 +68,13 @@ export default async function MyClassesPage() {
                     {formatPrice(cls.fee)}/month · {formatPrice(perSessionPrice(cls.fee, cls.sessions_per_month ?? 8))}/session · {students}/{cls.capacity} students
                     {full ? " · Full" : ""}
                   </p>
-                </div>
+                </Link>
                 <div className="flex items-center gap-2">
                   <StatusPill value={cls.difficulty_level} />
                   <StatusPill value={cls.status} />
-                  <span onClick={(e) => e.preventDefault()}>
-                    <ClassStatusMenu classId={cls.id} status={cls.status} />
-                  </span>
+                  <ClassStatusMenu classId={cls.id} status={cls.status} />
                 </div>
-              </Link>
+              </div>
             );
           })}
         </div>

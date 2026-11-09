@@ -6,7 +6,7 @@ export const metadata = { title: "Profile" };
 
 export default function CustomerProfilePage() {
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader title="Profile" subtitle="Your personal details and preferences." />
       <EmptyState
         icon={<UserRound className="size-6" />}

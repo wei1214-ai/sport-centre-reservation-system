@@ -7,8 +7,9 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { AlertCircle } from "lucide-react";
 
 import { RolePicker } from "@/components/auth/role-picker";
+import { BackToStepButton, StepIndicator } from "@/components/auth/register-steps";
 import { Button } from "@/components/ui/button";
-import { Field, Input, PasswordInput } from "@/components/ui/form-fields";
+import { Field, Input, NativeSelect, PasswordInput } from "@/components/ui/form-fields";
 import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from "@/lib/validators";
 import { loginAction, registerAction, forgotPasswordAction, updatePasswordAction, type AuthActionResult } from "@/lib/auth-actions";
 import type { UserRole } from "@/types/database";
@@ -44,14 +45,14 @@ export function LoginForm({ nextPath }: { nextPath?: string }) {
   return (
     <form onSubmit={onSubmit} className="grid gap-4" noValidate>
       {result && !result.ok ? (
-        <div className="flex items-start gap-2 rounded-[var(--radius-md)] border border-danger/30 bg-danger-soft px-3 py-2.5 text-[0.82rem] text-danger">
+        <div className="flex items-start gap-2 rounded-2xl bg-danger-soft px-3.5 py-3 text-[0.82rem] text-danger">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <span>{result.error}</span>
         </div>
       ) : null}
 
-      <div className="grid gap-1.5">
-        <span className="text-[0.8rem] font-medium text-ink">I am signing in as</span>
+      <div className="grid gap-2">
+        <span className="eyebrow">I am signing in as</span>
         <RolePicker value={role} compact onChange={(r) => form.setValue("role", r)} />
       </div>
 
@@ -77,7 +78,7 @@ export function LoginForm({ nextPath }: { nextPath?: string }) {
       <div className="flex items-center justify-between">
         <Link
           href="/forgot-password"
-          className="text-[0.8rem] font-medium text-brand hover:text-brand-hover"
+          className="text-[0.8rem] font-medium text-ink hover:text-subtle"
         >
           Forgot password?
         </Link>
@@ -112,9 +113,11 @@ type RegisterValues = {
 export function RegisterForm() {
   const [pendingRole, setPendingRole] = React.useState<UserRole>("customer");
   const [result, setResult] = React.useState<AuthActionResult | null>(null);
+  const [step, setStep] = React.useState<1 | 2>(1);
 
   const form = useForm<RegisterValues>({
     resolver: standardSchemaResolver(registerSchema),
+    shouldUnregister: false,
     defaultValues: {
       fullName: "",
       email: "",
@@ -130,6 +133,20 @@ export function RegisterForm() {
   const role = form.watch("role");
   void pendingRole;
 
+  const goToStepTwo = async () => {
+    setResult(null);
+    const valid = await form.trigger([
+      "role",
+      "fullName",
+      "email",
+      "password",
+      "confirmPassword",
+    ]);
+    if (valid) {
+      setStep(2);
+    }
+  };
+
   const onSubmit = form.handleSubmit(async (values) => {
     setResult(null);
     const res = await registerAction(values);
@@ -143,8 +160,8 @@ export function RegisterForm() {
   if (result?.ok) {
     return (
       <div className="grid gap-3">
-        <div className="rounded-[var(--radius-md)] border border-success/30 bg-success-soft px-3 py-3 text-[0.85rem] text-success">
-          <p className="font-semibold">Almost there — confirm your email</p>
+        <div className="rounded-2xl bg-success-soft px-4 py-3.5 text-[0.85rem] text-success">
+          <p className="font-medium">Almost there — confirm your email</p>
           <p className="mt-1 text-[0.82rem]">{result.message}</p>
         </div>
         <Link href="/login" className="justify-self-start">
@@ -155,80 +172,107 @@ export function RegisterForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3.5" noValidate>
+    <form onSubmit={onSubmit} className="grid gap-3" noValidate>
       {result && !result.ok ? (
-        <div className="flex items-start gap-2 rounded-[var(--radius-md)] border border-danger/30 bg-danger-soft px-3 py-2.5 text-[0.82rem] text-danger">
+        <div className="flex items-start gap-2 rounded-2xl bg-danger-soft px-3.5 py-3 text-[0.82rem] text-danger">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <span>{result.error}</span>
         </div>
       ) : null}
 
-      <div className="grid gap-1.5">
-        <span className="text-[0.8rem] font-medium text-ink">Account type</span>
-        <RolePicker value={role} onChange={(r) => form.setValue("role", r)} />
-      </div>
+      <StepIndicator step={step} />
 
-      <div className="grid gap-3.5 sm:grid-cols-2">
-        <Field label="Full name" required className="sm:col-span-2" error={form.formState.errors.fullName?.message}>
-          <Input
-            autoComplete="name"
-            placeholder="e.g. Alex Tan"
-            data-error={!!form.formState.errors.fullName}
-            {...form.register("fullName")}
-          />
-        </Field>
-        <Field label="Email" required error={form.formState.errors.email?.message}>
-          <Input
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            data-error={!!form.formState.errors.email}
-            {...form.register("email")}
-          />
-        </Field>
-        <Field label="Phone" hint="Optional" error={form.formState.errors.phone?.message}>
-          <Input
-            autoComplete="tel"
-            placeholder="e.g. 0123456789"
-            data-error={!!form.formState.errors.phone}
-            {...form.register("phone")}
-          />
-        </Field>
-        <Field label="Gender" hint="Optional" error={form.formState.errors.gender?.message}>
-          <select className="input" {...form.register("gender")}>
-            <option value="">Select…</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-        </Field>
-        <Field label="Date of birth" hint="Optional" error={form.formState.errors.dateOfBirth?.message}>
-          <Input type="date" {...form.register("dateOfBirth")} />
-        </Field>
-        <Field label="Password" required className="sm:col-span-2" error={form.formState.errors.password?.message}>
-          <PasswordInput
-            autoComplete="new-password"
-            placeholder="At least 8 characters"
-            data-error={!!form.formState.errors.password}
-            {...form.register("password")}
-          />
-        </Field>
-        <Field label="Confirm password" required className="sm:col-span-2" error={form.formState.errors.confirmPassword?.message}>
-          <PasswordInput
-            autoComplete="new-password"
-            data-error={!!form.formState.errors.confirmPassword}
-            {...form.register("confirmPassword")}
-          />
-        </Field>
-      </div>
+      {step === 1 ? (
+        <>
+          <div className="grid gap-2">
+            <span className="eyebrow">Account type</span>
+            <RolePicker value={role} compact onChange={(r) => form.setValue("role", r)} />
+          </div>
 
-      <Button type="submit" size="lg" disabled={form.formState.isSubmitting}>
-        {form.formState.isSubmitting ? "Creating account…" : "Create account"}
-      </Button>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Full name" required className="sm:col-span-2" error={form.formState.errors.fullName?.message}>
+              <Input
+                autoComplete="name"
+                placeholder="e.g. Alex Tan"
+                data-error={!!form.formState.errors.fullName}
+                {...form.register("fullName")}
+              />
+            </Field>
+            <Field label="Email" required className="sm:col-span-2" error={form.formState.errors.email?.message}>
+              <Input
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                data-error={!!form.formState.errors.email}
+                {...form.register("email")}
+              />
+            </Field>
+            <Field label="Password" required error={form.formState.errors.password?.message}>
+              <PasswordInput
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+                data-error={!!form.formState.errors.password}
+                {...form.register("password")}
+              />
+            </Field>
+            <Field label="Confirm password" required error={form.formState.errors.confirmPassword?.message}>
+              <PasswordInput
+                autoComplete="new-password"
+                data-error={!!form.formState.errors.confirmPassword}
+                {...form.register("confirmPassword")}
+              />
+            </Field>
+          </div>
+
+          <Button
+            type="button"
+            size="lg"
+            className="w-full"
+            onClick={goToStepTwo}
+          >
+            Continue
+          </Button>
+        </>
+      ) : (
+        <>
+          <p className="text-[0.85rem] leading-relaxed text-subtle">
+            Optional — add what you are comfortable sharing.
+          </p>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Phone" error={form.formState.errors.phone?.message}>
+              <Input
+                autoComplete="tel"
+                placeholder="e.g. 0123456789"
+                data-error={!!form.formState.errors.phone}
+                {...form.register("phone")}
+              />
+            </Field>
+            <Field label="Gender" error={form.formState.errors.gender?.message}>
+              <NativeSelect {...form.register("gender")}>
+                <option value="">Select…</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </NativeSelect>
+            </Field>
+            <Field label="Date of birth" error={form.formState.errors.dateOfBirth?.message}>
+              <Input type="date" {...form.register("dateOfBirth")} />
+            </Field>
+          </div>
+
+          <div className="flex items-center justify-between gap-2">
+            <BackToStepButton onBack={() => setStep(1)} />
+            <Button type="submit" size="lg" className="flex-1 sm:flex-none" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? "Creating account…" : "Create account"}
+            </Button>
+          </div>
+        </>
+      )}
 
       <p className="text-center text-[0.8rem] text-subtle">
         Already have an account?{" "}
-        <Link href="/login" className="font-medium text-brand hover:text-brand-hover">
+        <Link href="/login" className="font-medium text-ink underline decoration-line underline-offset-4 hover:decoration-ink">
           Sign in
         </Link>
       </p>
@@ -254,7 +298,7 @@ export function ForgotPasswordForm() {
 
   if (result?.ok) {
     return (
-      <div className="rounded-[var(--radius-md)] border border-success/30 bg-success-soft px-3 py-3 text-[0.85rem] text-success">
+      <div className="rounded-2xl bg-success-soft px-4 py-3.5 text-[0.85rem] text-success">
         {result.message}
       </div>
     );
@@ -263,7 +307,7 @@ export function ForgotPasswordForm() {
   return (
     <form onSubmit={onSubmit} className="grid gap-4" noValidate>
       {result && !result.ok ? (
-        <div className="flex items-start gap-2 rounded-[var(--radius-md)] border border-danger/30 bg-danger-soft px-3 py-2.5 text-[0.82rem] text-danger">
+        <div className="flex items-start gap-2 rounded-2xl bg-danger-soft px-3.5 py-3 text-[0.82rem] text-danger">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <span>{result.error}</span>
         </div>
@@ -307,7 +351,7 @@ export function ResetPasswordForm() {
   return (
     <form onSubmit={onSubmit} className="grid gap-4" noValidate>
       {result && !result.ok ? (
-        <div className="flex items-start gap-2 rounded-[var(--radius-md)] border border-danger/30 bg-danger-soft px-3 py-2.5 text-[0.82rem] text-danger">
+        <div className="flex items-start gap-2 rounded-2xl bg-danger-soft px-3.5 py-3 text-[0.82rem] text-danger">
           <AlertCircle className="mt-0.5 size-4 shrink-0" />
           <span>{result.error}</span>
         </div>

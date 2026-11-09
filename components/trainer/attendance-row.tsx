@@ -68,7 +68,7 @@ export function AttendanceRow({
     optimistic === "not_marked" ? "Not marked" : optimistic.charAt(0).toUpperCase() + optimistic.slice(1);
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-[var(--radius-md)] border border-line bg-surface px-3.5 py-2.5">
+    <div className="surface flex items-center justify-between gap-3 px-4 py-3">
       <div className="min-w-0">
         <p className="truncate text-[0.88rem] font-semibold text-ink">{name}</p>
         <p className="truncate text-[0.72rem] text-subtle">{email}</p>

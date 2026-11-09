@@ -26,7 +26,7 @@ export default async function AnnouncementsPage() {
     .map((c) => ({ id: c.id, title: c.title, studentCount: counts.get(c.id) ?? 0 }));
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="Announcements"
         subtitle="Broadcast a message to an enrolled class — it lands in the class chat and in each student's notifications."
@@ -44,7 +44,7 @@ export default async function AnnouncementsPage() {
             {announcements.map((item) => (
               <div key={item.id} className="surface flex gap-3 px-4 py-3">
                 <span className="mt-0.5 hidden sm:block">
-                  <span className="grid size-8 place-items-center rounded-[var(--radius-md)] bg-brand-soft text-brand">
+                  <span className="grid size-9 place-items-center rounded-full bg-[linear-gradient(135deg,#e7efff,#f0e6ff)] text-ink/70">
                     <Megaphone className="size-4" />
                   </span>
                 </span>

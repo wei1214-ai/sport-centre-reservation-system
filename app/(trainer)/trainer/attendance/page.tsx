@@ -25,7 +25,7 @@ export default async function AttendancePage({
 
   if (!activeClasses.length || !selectedClassId) {
     return (
-      <div className="grid gap-5">
+      <div className="grid gap-7">
         <PageHeader title="Attendance" subtitle="Mark attendance per session roster." />
         <EmptyState
           className="border-dashed"
@@ -51,7 +51,7 @@ export default async function AttendancePage({
 
   if (!selectedSessionId) {
     return (
-      <div className="grid gap-5">
+      <div className="grid gap-7">
         <PageHeader title="Attendance" subtitle="Mark attendance per session roster." />
         <EmptyState
           className="border-dashed"
@@ -73,7 +73,7 @@ export default async function AttendancePage({
   );
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="Attendance"
         subtitle="Pick a class and session, then mark each student."

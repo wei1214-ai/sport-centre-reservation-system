@@ -23,7 +23,7 @@ export default async function TrainerProfilePage() {
   };
 
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="Profile"
         subtitle="Shown to customers when they look at your classes."

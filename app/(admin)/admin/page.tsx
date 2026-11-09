@@ -6,7 +6,7 @@ export const metadata = { title: "Admin home" };
 
 export default function AdminHomePage() {
   return (
-    <div className="grid gap-5">
+    <div className="grid gap-7">
       <PageHeader
         title="Administration"
         subtitle="Operational dashboards arrive in a later milestone."

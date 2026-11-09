@@ -7,9 +7,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       toastOptions={{
         classNames: {
-          toast: "!rounded-[0.65rem] !border-line !bg-surface !text-ink",
+          toast:
+            "!rounded-2xl !border-line !bg-[#fbfaf7] !text-ink !shadow-[0_24px_70px_rgba(12,12,13,0.14)]",
           description: "!text-subtle",
-          actionButton: "!bg-brand !text-white",
+          actionButton: "!rounded-full !bg-ink !text-white",
         },
       }}
       {...props}
