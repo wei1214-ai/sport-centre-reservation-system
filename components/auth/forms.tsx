@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { format } from "date-fns";
+import { format, subYears } from "date-fns";
 import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { AlertCircle } from "lucide-react";
@@ -12,7 +12,9 @@ import { BackToStepButton, StepIndicator } from "@/components/auth/register-step
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Field, Input, PasswordInput } from "@/components/ui/form-fields";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GENDERS } from "@/lib/constants";
 import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from "@/lib/validators";
 import { loginAction, registerAction, forgotPasswordAction, updatePasswordAction, type AuthActionResult } from "@/lib/auth-actions";
 import type { UserRole } from "@/types/database";
@@ -117,6 +119,15 @@ export function RegisterForm() {
   const [pendingRole, setPendingRole] = React.useState<UserRole>("customer");
   const [result, setResult] = React.useState<AuthActionResult | null>(null);
   const [step, setStep] = React.useState<1 | 2>(1);
+  const [dobInvalid, setDobInvalid] = React.useState(false);
+  const dobInvalidRef = React.useRef(false);
+  const dobMin = React.useMemo(() => format(subYears(new Date(), 120), "yyyy-MM-dd"), []);
+  const dobMax = React.useMemo(() => format(new Date(), "yyyy-MM-dd"), []);
+
+  const handleDobValidity = React.useCallback((valid: boolean) => {
+    dobInvalidRef.current = !valid;
+    setDobInvalid(!valid);
+  }, []);
 
   const form = useForm<RegisterValues>({
     resolver: standardSchemaResolver(registerSchema),
@@ -146,11 +157,17 @@ export function RegisterForm() {
       "confirmPassword",
     ]);
     if (valid) {
+      dobInvalidRef.current = false;
+      setDobInvalid(false);
       setStep(2);
     }
   };
 
   const onSubmit = form.handleSubmit(async (values) => {
+    if (dobInvalidRef.current) {
+      setStep(2);
+      return;
+    }
     setResult(null);
     const res = await registerAction(values);
     if (res.ok) {
@@ -239,19 +256,29 @@ export function RegisterForm() {
       ) : (
         <>
           <p className="text-[0.85rem] leading-relaxed text-subtle">
-            Optional — add what you are comfortable sharing.
+            All fields are required to create your account.
           </p>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Phone" error={form.formState.errors.phone?.message}>
-              <Input
-                autoComplete="tel"
-                placeholder="e.g. 0123456789"
-                data-error={!!form.formState.errors.phone}
-                {...form.register("phone")}
+            <Field label="Phone" htmlFor="phone" required error={form.formState.errors.phone?.message}>
+              <Controller
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <PhoneInput
+                    id="phone"
+                    ref={field.ref}
+                    autoComplete="tel"
+                    placeholder="e.g. 011-2000 1010"
+                    data-error={!!form.formState.errors.phone}
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                  />
+                )}
               />
             </Field>
-            <Field label="Gender" error={form.formState.errors.gender?.message}>
+            <Field label="Gender" htmlFor="gender" required error={form.formState.errors.gender?.message}>
               <Controller
                 control={form.control}
                 name="gender"
@@ -268,15 +295,26 @@ export function RegisterForm() {
                       <SelectValue placeholder="Select…" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
+                      {GENDERS.map((gender) => (
+                        <SelectItem key={gender} value={gender}>
+                          {gender}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 )}
               />
             </Field>
-            <Field label="Date of birth" error={form.formState.errors.dateOfBirth?.message}>
+            <Field
+              label="Date of birth"
+              htmlFor="dateOfBirth"
+              required
+              error={
+                dobInvalid
+                  ? "Enter a valid date of birth"
+                  : form.formState.errors.dateOfBirth?.message
+              }
+            >
               <Controller
                 control={form.control}
                 name="dateOfBirth"
@@ -285,9 +323,13 @@ export function RegisterForm() {
                     id="dateOfBirth"
                     value={field.value}
                     onChange={field.onChange}
+                    onValidityChange={handleDobValidity}
                     onBlur={field.onBlur}
-                    max={format(new Date(), "yyyy-MM-dd")}
-                    data-error={!!form.formState.errors.dateOfBirth}
+                    min={dobMin}
+                    max={dobMax}
+                    data-error={
+                      dobInvalid || !!form.formState.errors.dateOfBirth
+                    }
                   />
                 )}
               />

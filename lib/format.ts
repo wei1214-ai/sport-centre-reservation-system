@@ -37,6 +37,43 @@ export function formatTimeOnly(value: string | Date | null | undefined): string 
   return fmt(value, "HH:mm", "—");
 }
 
+/**
+ * Malaysian phone display format, applied while typing:
+ * `011-2000 1010`, `012-345 6789`, `03-2345 6789`, `082-123 456`.
+ * Accepts `+60`/`60` prefixes and drops any separators the user pasted.
+ */
+export function formatMalaysianPhone(input: string): string {
+  let digits = input.replace(/\D/g, "");
+  if (digits.startsWith("60")) digits = `0${digits.slice(2)}`;
+
+  let groups: number[];
+  if (digits.startsWith("011") || digits.startsWith("015")) {
+    groups = [3, 4, 4];
+  } else if (digits.startsWith("01")) {
+    groups = [3, 3, 4];
+  } else if (digits.startsWith("03")) {
+    groups = [2, 4, 4];
+  } else if (digits.startsWith("08")) {
+    groups = [3, 3, 3];
+  } else if (/^0[4-9]/.test(digits)) {
+    groups = [2, 3, 4];
+  } else {
+    groups = [3, 4, 4];
+  }
+
+  const maxLength = groups.reduce((total, size) => total + size, 0);
+  digits = digits.slice(0, maxLength);
+
+  let formatted = "";
+  let start = 0;
+  for (let index = 0; index < groups.length && start < digits.length; index += 1) {
+    if (index > 0) formatted += index === 1 ? "-" : " ";
+    formatted += digits.slice(start, start + groups[index]);
+    start += groups[index];
+  }
+  return formatted;
+}
+
 export function formatDayLabel(value: string | Date | null | undefined): string {
   return fmt(value, "dd/MM/yyyy", "—");
 }

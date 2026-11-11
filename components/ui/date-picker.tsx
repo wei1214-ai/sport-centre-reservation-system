@@ -53,9 +53,37 @@ function toValue(date: Date): string {
   return format(date, "yyyy-MM-dd");
 }
 
+function digitsOnly(input: string): string {
+  return input.replace(/\D/g, "").slice(0, 8);
+}
+
+function formatDigits(digits: string): string {
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function dateFromDigits(digits: string): Date | null {
+  if (digits.length !== 8) return null;
+  const day = Number(digits.slice(0, 2));
+  const month = Number(digits.slice(2, 4));
+  const year = Number(digits.slice(4));
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return date;
+}
+
 export function DatePicker({
   value,
   onChange,
+  onValidityChange,
   onBlur,
   id,
   placeholder = "DD/MM/YYYY",
@@ -68,6 +96,8 @@ export function DatePicker({
   /** ISO calendar date, `yyyy-MM-dd`. */
   value?: string;
   onChange: (value: string) => void;
+  /** Reports whether the typed text is empty or a complete, in-range date. */
+  onValidityChange?: (valid: boolean) => void;
   onBlur?: () => void;
   id?: string;
   placeholder?: string;
@@ -85,14 +115,25 @@ export function DatePicker({
   const [view, setView] = React.useState<"days" | "months" | "years">("days");
   const [cursor, setCursor] = React.useState<Date>(() => selected ?? new Date());
   const [position, setPosition] = React.useState<{ top: number; left: number } | null>(null);
+  const selectedText = selected ? format(selected, "dd/MM/yyyy") : "";
+  const [text, setText] = React.useState(selectedText);
+  const [invalid, setInvalid] = React.useState(false);
 
-  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const typingRef = React.useRef(false);
+  const containerRef = React.useRef<HTMLSpanElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const popupRef = React.useRef<HTMLDivElement>(null);
 
+  React.useEffect(() => {
+    if (typingRef.current) return;
+    setText(selectedText);
+    setInvalid(false);
+  }, [selectedText]);
+
   const placePopup = React.useCallback(() => {
-    const trigger = triggerRef.current;
-    if (!trigger) return;
-    const rect = trigger.getBoundingClientRect();
+    const input = inputRef.current;
+    if (!input) return;
+    const rect = input.getBoundingClientRect();
     const left = Math.min(
       Math.max(8, rect.left),
       Math.max(8, window.innerWidth - POPUP_WIDTH - 8),
@@ -106,6 +147,8 @@ export function DatePicker({
   }, []);
 
   const openCalendar = () => {
+    if (open) return;
+    typingRef.current = false;
     setCursor(selected ?? new Date());
     setView("days");
     placePopup();
@@ -116,7 +159,7 @@ export function DatePicker({
     if (!open) return;
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
-      if (triggerRef.current?.contains(target) || popupRef.current?.contains(target)) {
+      if (containerRef.current?.contains(target) || popupRef.current?.contains(target)) {
         return;
       }
       setOpen(false);
@@ -127,7 +170,7 @@ export function DatePicker({
       event.preventDefault();
       event.stopPropagation();
       setOpen(false);
-      triggerRef.current?.focus();
+      inputRef.current?.focus();
     };
     const onReflow = () => placePopup();
 
@@ -143,17 +186,6 @@ export function DatePicker({
     };
   }, [open, placePopup]);
 
-  React.useEffect(() => {
-    if (!open || view !== "days") return;
-    const frame = window.requestAnimationFrame(() => {
-      const focusTarget = popupRef.current?.querySelector<HTMLButtonElement>(
-        "[data-day][data-selected='true'], [data-day][data-today='true'], [data-day]:not(:disabled)",
-      );
-      focusTarget?.focus();
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [open, view]);
-
   const isDisabled = (day: Date) => {
     if (minDate && isBefore(day, startOfDay(minDate))) return true;
     if (maxDate && isAfter(day, startOfDay(maxDate))) return true;
@@ -162,9 +194,62 @@ export function DatePicker({
 
   const selectDay = (day: Date) => {
     if (isDisabled(day)) return;
+    typingRef.current = false;
+    setText(format(day, "dd/MM/yyyy"));
+    setInvalid(false);
+    onValidityChange?.(true);
     onChange(toValue(day));
     setOpen(false);
-    triggerRef.current?.focus();
+    inputRef.current?.focus();
+  };
+
+  const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = digitsOnly(event.target.value);
+    typingRef.current = true;
+    setText(formatDigits(digits));
+    setInvalid(false);
+
+    if (digits.length === 0) {
+      onValidityChange?.(true);
+      onChange("");
+      return;
+    }
+
+    if (digits.length < 8) {
+      onChange("");
+      return;
+    }
+
+    const date = dateFromDigits(digits);
+    if (!date || isDisabled(date)) {
+      setInvalid(true);
+      onValidityChange?.(false);
+      onChange("");
+      return;
+    }
+
+    setCursor(date);
+    onValidityChange?.(true);
+    onChange(toValue(date));
+  };
+
+  const handleBlur = () => {
+    typingRef.current = false;
+    const digits = digitsOnly(text);
+    const date = dateFromDigits(digits);
+    if (digits.length === 0) {
+      setInvalid(false);
+      onValidityChange?.(true);
+    } else if (date && !isDisabled(date)) {
+      setText(format(date, "dd/MM/yyyy"));
+      setInvalid(false);
+      onValidityChange?.(true);
+    } else {
+      // Keep what the user typed so the error is visible instead of silently clearing it.
+      setInvalid(true);
+      onValidityChange?.(false);
+    }
+    onBlur?.();
   };
 
   const today = startOfDay(new Date());
@@ -197,26 +282,52 @@ export function DatePicker({
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        id={id}
-        type="button"
-        disabled={disabled}
-        data-error={dataError}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => (open ? setOpen(false) : openCalendar())}
-        onBlur={onBlur}
-        className={cn(
-          "input flex w-full min-w-0 items-center justify-between gap-2 text-left",
-          className,
-        )}
-      >
-        <span className={cn("truncate", !selected && "text-subtle/80")}>
-          {selected ? format(selected, "dd/MM/yyyy") : placeholder}
-        </span>
-        <CalendarDays className="size-4 shrink-0 text-subtle" aria-hidden />
-      </button>
+      <span ref={containerRef} className="relative block w-full min-w-0">
+        <input
+          ref={inputRef}
+          id={id}
+          type="text"
+          inputMode="numeric"
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={placeholder}
+          value={text}
+          disabled={disabled}
+          data-error={dataError || invalid}
+          aria-invalid={dataError || invalid || undefined}
+          onChange={handleInput}
+          onBlur={handleBlur}
+          onClick={openCalendar}
+          onFocus={openCalendar}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              openCalendar();
+            }
+            if (event.key === "Enter") {
+              const digits = digitsOnly(text);
+              const date = dateFromDigits(digits);
+              const valid = digits.length === 0 || (!!date && !isDisabled(date));
+              if (!valid) {
+                event.preventDefault();
+                setInvalid(true);
+                onValidityChange?.(false);
+              }
+            }
+          }}
+          className={cn("input pr-10", className)}
+        />
+        <button
+          type="button"
+          aria-label={open ? "Close calendar" : "Open calendar"}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={() => (open ? setOpen(false) : openCalendar())}
+          className="absolute top-1/2 right-2 -translate-y-1/2 rounded-[var(--radius-sm)] p-1.5 text-subtle transition-colors hover:bg-page hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        >
+          <CalendarDays className="size-4" aria-hidden />
+        </button>
+      </span>
 
       {open && position
         ? createPortal(
@@ -355,9 +466,13 @@ export function DatePicker({
                 <button
                   type="button"
                   onClick={() => {
+                    typingRef.current = false;
+                    setText("");
+                    setInvalid(false);
+                    onValidityChange?.(true);
                     onChange("");
                     setOpen(false);
-                    triggerRef.current?.focus();
+                    inputRef.current?.focus();
                   }}
                   className="rounded-full px-2.5 py-1 text-[0.78rem] text-subtle transition-colors hover:bg-ink/[0.055] hover:text-ink"
                 >

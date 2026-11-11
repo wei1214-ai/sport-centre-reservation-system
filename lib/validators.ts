@@ -33,6 +33,58 @@ export const loginSchema = z.object({
   role: roleSchema,
 });
 
+/**
+ * Malaysian numbers in national (`0…`) or international (`+60…`/`60…`) form.
+ * Mobile numbers are 10 digits (`01X` + 7) or 11 digits (`011`/`015` + 8).
+ * Landlines are `03` + 8, `04`–`09` + 7, or `08X` + 6 digits.
+ */
+function isValidMalaysianPhone(value: string) {
+  const compact = value.replace(/[\s()-]/g, "");
+  if (!/^\+?\d+$/.test(compact)) return false;
+
+  let nsn: string;
+  if (compact.startsWith("+60")) {
+    nsn = compact.slice(3);
+  } else if (compact.startsWith("60")) {
+    nsn = compact.slice(2);
+  } else if (compact.startsWith("0")) {
+    nsn = compact.slice(1);
+  } else {
+    return false;
+  }
+
+  // Mobile: 011/015 use an 8-digit subscriber; other 01X codes use 7.
+  if (/^1[15]\d{8}$/.test(nsn)) return true;
+  if (/^1[02-46-9]\d{7}$/.test(nsn)) return true;
+
+  // Landline: Klang Valley, other Peninsular codes, then East Malaysia.
+  if (/^3\d{8}$/.test(nsn)) return true;
+  if (/^8[2-9]\d{6}$/.test(nsn)) return true;
+  return /^[4-79]\d{7}$/.test(nsn);
+}
+
+/** Real calendar date, not in the future and no more than 120 years old. */
+function isValidDateOfBirth(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (date.getTime() > today.getTime()) return false;
+
+  const oldest = new Date();
+  oldest.setFullYear(oldest.getFullYear() - 120);
+  oldest.setHours(0, 0, 0, 0);
+  return date.getTime() >= oldest.getTime();
+}
+
 export const registerSchema = z
   .object({
     fullName: z
@@ -44,15 +96,14 @@ export const registerSchema = z
     phone: z
       .string()
       .trim()
-      .regex(/^[0-9+\-\s()]{6,20}$/, "Enter a valid phone number")
-      .optional()
-      .or(z.literal("")),
-    gender: z.enum(GENDERS).or(z.literal("")).optional(),
+      .min(1, "Phone number is required")
+      .refine(isValidMalaysianPhone, "Enter a valid Malaysian phone number"),
+    gender: z.enum(GENDERS, { message: "Select a gender" }),
     dateOfBirth: z
       .string()
+      .min(1, "Date of birth is required")
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date")
-      .optional()
-      .or(z.literal("")),
+      .refine(isValidDateOfBirth, "Enter a valid date of birth"),
     role: roleSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, "Confirm your password"),
