@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { CalendarPlus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Field, Input, NativeSelect } from "@/components/ui/form-fields";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -167,10 +168,18 @@ export function SessionDialog({
           </Field>
 
           <Field label="Date" required error={form.formState.errors.date?.message}>
-            <Input
-              type="date"
-              data-error={!!form.formState.errors.date}
-              {...form.register("date")}
+            <Controller
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <DatePicker
+                  id="session-date"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  data-error={!!form.formState.errors.date}
+                />
+              )}
             />
           </Field>
           <div className="grid grid-cols-2 gap-3">

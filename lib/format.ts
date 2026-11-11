@@ -26,11 +26,11 @@ function fmt(value: string | Date | null | undefined, pattern: string, fallback:
 }
 
 export function formatDateTime(value: string | Date | null | undefined): string {
-  return fmt(value, "EEE, d MMM yyyy · HH:mm", "—");
+  return fmt(value, "dd/MM/yyyy · HH:mm", "—");
 }
 
 export function formatDateOnly(value: string | Date | null | undefined): string {
-  return fmt(value, "EEE, d MMM yyyy", "—");
+  return fmt(value, "dd/MM/yyyy", "—");
 }
 
 export function formatTimeOnly(value: string | Date | null | undefined): string {
@@ -38,7 +38,7 @@ export function formatTimeOnly(value: string | Date | null | undefined): string 
 }
 
 export function formatDayLabel(value: string | Date | null | undefined): string {
-  return fmt(value, "d MMM yyyy", "—");
+  return fmt(value, "dd/MM/yyyy", "—");
 }
 
 export function relativeFromNow(value: string | Date | null | undefined): string {

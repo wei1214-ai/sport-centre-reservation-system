@@ -2,14 +2,17 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { format } from "date-fns";
+import { Controller, useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { AlertCircle } from "lucide-react";
 
 import { RolePicker } from "@/components/auth/role-picker";
 import { BackToStepButton, StepIndicator } from "@/components/auth/register-steps";
 import { Button } from "@/components/ui/button";
-import { Field, Input, NativeSelect, PasswordInput } from "@/components/ui/form-fields";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Field, Input, PasswordInput } from "@/components/ui/form-fields";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { loginSchema, registerSchema, forgotPasswordSchema, resetPasswordSchema } from "@/lib/validators";
 import { loginAction, registerAction, forgotPasswordAction, updatePasswordAction, type AuthActionResult } from "@/lib/auth-actions";
 import type { UserRole } from "@/types/database";
@@ -249,15 +252,45 @@ export function RegisterForm() {
               />
             </Field>
             <Field label="Gender" error={form.formState.errors.gender?.message}>
-              <NativeSelect {...form.register("gender")}>
-                <option value="">Select…</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </NativeSelect>
+              <Controller
+                control={form.control}
+                name="gender"
+                render={({ field }) => (
+                  <Select
+                    value={field.value || undefined}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger
+                      id="gender"
+                      onBlur={field.onBlur}
+                      data-error={!!form.formState.errors.gender}
+                    >
+                      <SelectValue placeholder="Select…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </Field>
             <Field label="Date of birth" error={form.formState.errors.dateOfBirth?.message}>
-              <Input type="date" {...form.register("dateOfBirth")} />
+              <Controller
+                control={form.control}
+                name="dateOfBirth"
+                render={({ field }) => (
+                  <DatePicker
+                    id="dateOfBirth"
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    max={format(new Date(), "yyyy-MM-dd")}
+                    data-error={!!form.formState.errors.dateOfBirth}
+                  />
+                )}
+              />
             </Field>
           </div>
 
