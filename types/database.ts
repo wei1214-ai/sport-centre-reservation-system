@@ -10,6 +10,7 @@ export type UserRole = "customer" | "trainer" | "admin";
 
 export type FacilityStatus = "available" | "unavailable" | "maintenance";
 export type ClassDifficulty = "beginner" | "intermediate" | "advanced";
+export type FitnessLevel = "beginner" | "intermediate" | "advanced";
 export type ClassStatus = "active" | "cancelled" | "archived";
 export type SessionStatus = "scheduled" | "completed" | "cancelled";
 export type BookingStatus = "confirmed" | "cancelled" | "completed";
@@ -49,6 +50,14 @@ export interface Database {
           date_of_birth: string | null;
           avatar_url: string | null;
           is_active: boolean;
+          /** Set when a customer self-deletes; PII is anonymized and is_active=false. */
+          deleted_at: string | null;
+          /** Set by an administrator when the account is suspended. */
+          suspended_at: string | null;
+          /** Administrator-only note explaining why the account was suspended. */
+          suspended_reason: string | null;
+          /** Profile id of the administrator who suspended the account. */
+          suspended_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -63,10 +72,43 @@ export interface Database {
           date_of_birth?: string | null;
           avatar_url?: string | null;
           is_active?: boolean;
+          deleted_at?: string | null;
+          suspended_at?: string | null;
+          suspended_reason?: string | null;
+          suspended_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["user_profiles"]["Insert"]>;
+      };
+      customer_fitness_profiles: {
+        Row: {
+          id: string;
+          customer_id: string;
+          height_cm: number | null;
+          weight_kg: number | null;
+          fitness_level: FitnessLevel | null;
+          fitness_goals: string | null;
+          medical_conditions: string | null;
+          emergency_contact_name: string | null;
+          emergency_contact_phone: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          customer_id: string;
+          height_cm?: number | null;
+          weight_kg?: number | null;
+          fitness_level?: FitnessLevel | null;
+          fitness_goals?: string | null;
+          medical_conditions?: string | null;
+          emergency_contact_name?: string | null;
+          emergency_contact_phone?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["customer_fitness_profiles"]["Insert"]>;
       };
       membership_tiers: {
         Row: {
@@ -123,8 +165,12 @@ export interface Database {
           capacity: number | null;
           hourly_rate: number;
           status: FacilityStatus;
+          /** Daily operating window in the centre's timezone (HH:MM:SS). */
+          opening_time: string;
+          closing_time: string;
           image_url: string | null;
           created_at: string;
+          updated_at: string;
         };
         Insert: Partial<Omit<Database["public"]["Tables"]["facilities"]["Row"], "id" | "created_at">>;
         Update: Partial<Database["public"]["Tables"]["facilities"]["Insert"]>;
@@ -327,10 +373,17 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["booking_reschedule_history"]["Insert"]>;
       };
     };
+    Functions: {
+      delete_my_customer_account: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+    };
   };
 }
 
 export type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
+export type CustomerFitnessProfile = Database["public"]["Tables"]["customer_fitness_profiles"]["Row"];
 export type MembershipTier = Database["public"]["Tables"]["membership_tiers"]["Row"];
 export type CustomerMembership = Database["public"]["Tables"]["customer_memberships"]["Row"];
 export type Trainer = Database["public"]["Tables"]["trainers"]["Row"];

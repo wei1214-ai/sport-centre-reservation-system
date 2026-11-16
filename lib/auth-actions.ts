@@ -20,6 +20,14 @@ export type AuthActionResult =
   | { ok: true; message?: string; needsConfirmation?: boolean; email?: string }
   | { ok: false; error: string; fieldErrors?: FieldErrors };
 
+/**
+ * Shown whenever a sign-up is attempted with an email that already has an
+ * account. Supabase deliberately hides this when email confirmation is on, so
+ * the UI has to explain it clearly.
+ */
+const EMAIL_TAKEN_MESSAGE =
+  "This email is already registered. Sign in instead, or reset your password if you have forgotten it. If you deleted this account and want to reuse the email, please contact an administrator.";
+
 function friendlyAuthError(message: string): string {
   if (/Invalid login credentials/i.test(message)) {
     return "Email or password is incorrect.";
@@ -88,7 +96,7 @@ export async function loginAction(input: {
 
   if (!profile.is_active) {
     await supabase.auth.signOut();
-    return { ok: false, error: "This account is suspended. Please contact an administrator." };
+    return { ok: false, error: "This account is deactivated. Please contact an administrator." };
   }
 
   // Redirect is based on the ACTUAL profile role, never on client input.
@@ -119,6 +127,13 @@ export async function registerAction(input: {
   }
   const values = parsed.data;
 
+  if (values.role === "admin") {
+    return {
+      ok: false,
+      error: "Administrator accounts are created by an existing administrator.",
+    };
+  }
+
   const supabase = await createSupabaseServerClient();
   const origin = await getOrigin();
 
@@ -139,7 +154,7 @@ export async function registerAction(input: {
 
   if (error) {
     if (/already registered|user already exists/i.test(error.message)) {
-      return { ok: false, error: "This email is already registered. Try signing in instead." };
+      return { ok: false, error: EMAIL_TAKEN_MESSAGE };
     }
     return { ok: false, error: friendlyAuthError(error.message) };
   }
@@ -147,6 +162,14 @@ export async function registerAction(input: {
   const authUser = data.user;
   if (!authUser) {
     return { ok: false, error: "Registration failed. Please try again." };
+  }
+
+  // With email confirmation enabled, Supabase returns a placeholder user (an id
+  // that is not in auth.users, and an empty identities array) when the email is
+  // already taken. Inserting a profile for it would break the auth_user_id
+  // foreign key, so answer with the real reason instead.
+  if (authUser.identities?.length === 0) {
+    return { ok: false, error: EMAIL_TAKEN_MESSAGE };
   }
 
   // Create the profile row directly tied to the authenticated user. The role
@@ -165,10 +188,16 @@ export async function registerAction(input: {
     });
 
   if (profileError) {
-    // RLS or a database constraint blocked the insert — tell the user, since we
-    // must never leave the console silently broken.
-    if (profileError.code === "23505" || profileError.code === "23503") {
-      return { ok: false, error: "Profile conflict: " + profileError.message };
+    // 23503 = the auth user does not exist (the placeholder-user case above),
+    // 23505 = a profile is already linked to this sign-in.
+    if (profileError.code === "23503") {
+      return { ok: false, error: EMAIL_TAKEN_MESSAGE };
+    }
+    if (profileError.code === "23505") {
+      return {
+        ok: false,
+        error: "A profile already exists for this sign-in. Please sign in instead.",
+      };
     }
     return { ok: false, error: "Profile could not be created: " + profileError.message };
   }

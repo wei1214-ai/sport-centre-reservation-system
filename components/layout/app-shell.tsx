@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   BookMarked,
+  Building2,
   CalendarRange,
   ChevronDown,
   ClipboardCheck,
@@ -15,6 +16,7 @@ import {
   Menu,
   MessageSquareText,
   UserCircle,
+  Users,
   X,
 } from "lucide-react";
 
@@ -40,21 +42,32 @@ export type CurrentUser = {
 const NAV: Record<UserRole, NavItem[]> = {
   customer: [
     { href: "/customer", label: "Home", icon: Home, exact: true },
+    { href: "/facilities", label: "Facilities", icon: Building2 },
+    { href: "/customer/my-classes", label: "My classes", icon: BookMarked },
+    { href: "/customer/inquiries", label: "Inquiries", icon: MessageSquareText },
+    { href: "/customer/attendance", label: "Attendance", icon: ClipboardCheck },
+    { href: "/customer/announcements", label: "Announcements", icon: Megaphone },
   ],
   trainer: [
     { href: "/trainer", label: "Home", icon: LayoutDashboard, exact: true },
+    { href: "/facilities", label: "Facilities", icon: Building2 },
     { href: "/trainer/my-classes", label: "My classes", icon: BookMarked },
     { href: "/trainer/class-sessions", label: "Sessions", icon: CalendarRange },
     { href: "/trainer/inquiries", label: "Inquiries", icon: MessageSquareText },
     { href: "/trainer/attendance", label: "Attendance", icon: ClipboardCheck },
     { href: "/trainer/announcements", label: "Announcements", icon: Megaphone },
   ],
-  admin: [{ href: "/admin", label: "Home", icon: LayoutDashboard, exact: true }],
+  admin: [
+    { href: "/admin", label: "Home", icon: LayoutDashboard, exact: true },
+    { href: "/admin/accounts", label: "Accounts", icon: Users },
+    { href: "/facilities", label: "Facilities", icon: Building2 },
+  ],
 };
 
 const PROFILE_HREF: Partial<Record<UserRole, string>> = {
   customer: "/customer/profile",
   trainer: "/trainer/profile",
+  admin: "/admin/profile",
 };
 
 const ROLE_HOME: Record<UserRole, string> = {

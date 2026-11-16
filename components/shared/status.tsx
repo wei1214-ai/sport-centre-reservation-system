@@ -12,6 +12,7 @@ type Tone = Parameters<typeof Pill>[0]["tone"];
 
 const map: Record<string, { label: string; tone: Tone }> = {
   active: { label: "Active", tone: "success" },
+  available: { label: "Available", tone: "success" },
   scheduled: { label: "Scheduled", tone: "brandSoft" },
   confirmed: { label: "Confirmed", tone: "success" },
   paid: { label: "Paid", tone: "success" },

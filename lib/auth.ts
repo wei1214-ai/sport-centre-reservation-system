@@ -59,6 +59,21 @@ export function roleHome(role: UserRole): string {
 }
 
 /**
+ * Requires any signed-in, active profile regardless of role. Used by shared
+ * areas (such as the facility catalogue) that every account can open.
+ */
+export async function requireActiveProfile(): Promise<UserProfile> {
+  const profile = await getCurrentProfile();
+  if (!profile) {
+    redirect("/login");
+  }
+  if (!profile.is_active) {
+    redirect("/suspended");
+  }
+  return profile;
+}
+
+/**
  * Requires a signed-in profile with the given role. Otherwise redirects: to
  * /login when signed out, or to the profile's own role home when signed in
  * with a different role.
@@ -71,6 +86,7 @@ export async function requireRole(role: UserRole): Promise<UserProfile> {
   if (!profile.is_active) {
     redirect("/suspended");
   }
+  // Deleted accounts are also deactivated, so this single check covers both.
   if (profile.role !== role) {
     redirect(roleHome(profile.role));
   }

@@ -38,11 +38,17 @@ export function RolePicker({
   value,
   onChange,
   compact = false,
+  allowAdmin = true,
 }: {
   value: UserRole;
   onChange: (role: UserRole) => void;
   compact?: boolean;
+  allowAdmin?: boolean;
 }) {
+  const options = allowAdmin
+    ? OPTIONS
+    : OPTIONS.filter((option) => option.value !== "admin");
+
   if (compact) {
     return (
       <div
@@ -50,7 +56,7 @@ export function RolePicker({
         role="radiogroup"
         aria-label="Account role"
       >
-        {OPTIONS.map((option) => {
+        {options.map((option) => {
           const checked = option.value === value;
           return (
             <label
@@ -85,7 +91,7 @@ export function RolePicker({
       role="radiogroup"
       aria-label="Account role"
     >
-      {OPTIONS.map((option) => {
+      {options.map((option) => {
         const checked = option.value === value;
         return (
           <label

@@ -2,6 +2,9 @@ import { z } from "zod";
 import {
   CLASS_DIFFICULTIES,
   CLASS_STATUSES,
+  FACILITY_STATUSES,
+  FACILITY_TYPES,
+  FITNESS_LEVELS,
   GENDERS,
   INQUIRY_STATUSES,
   SPORT_TYPES,
@@ -126,6 +129,233 @@ export const resetPasswordSchema = z
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
+/* ---------------- Customer module schemas ---------------- */
+
+/**
+ * Customers can edit their name, contact email, contact phone, gender and date
+ * of birth. The contact email is stored on the profile row and used for
+ * bookings and account notices; the Supabase sign-in email is separate.
+ */
+export const customerProfileSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Enter your full name")
+    .max(120, "Name is too long"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Contact email is required")
+    .max(254, "Email is too long")
+    .email("Enter a valid email"),
+  phone: z
+    .string()
+    .trim()
+    .max(20, "Phone number is too long")
+    .refine(
+      (value) => value === "" || isValidMalaysianPhone(value),
+      "Enter a valid Malaysian phone number",
+    ),
+  gender: z.enum(GENDERS).or(z.literal("")),
+  dateOfBirth: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date")
+    .refine(isValidDateOfBirth, "Enter a valid date of birth")
+    .or(z.literal("")),
+});
+
+/* ---------------- Admin module schemas ---------------- */
+
+/**
+ * Administrators maintain their own name and contact details. Gender and date
+ * of birth are not collected for staff accounts, so this is intentionally a
+ * smaller field set than the customer profile.
+ */
+export const adminProfileSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "Enter your full name")
+    .max(120, "Name is too long"),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Contact email is required")
+    .max(254, "Email is too long")
+    .email("Enter a valid email"),
+  phone: z
+    .string()
+    .trim()
+    .max(20, "Phone number is too long")
+    .refine(
+      (value) => value === "" || isValidMalaysianPhone(value),
+      "Enter a valid Malaysian phone number",
+    ),
+});
+
+/** Optional measurement kept as a string so the form can show an empty field. */
+function measurementSchema(min: number, max: number, label: string) {
+  return z
+    .string()
+    .trim()
+    .refine(
+      (value) =>
+        value === "" ||
+        (Number.isFinite(Number(value)) && Number(value) >= min && Number(value) <= max),
+      `${label} must be between ${min} and ${max}`,
+    );
+}
+
+export const customerFitnessSchema = z.object({
+  heightCm: measurementSchema(50, 250, "Height (cm)"),
+  weightKg: measurementSchema(20, 300, "Weight (kg)"),
+  fitnessLevel: z.enum(FITNESS_LEVELS).or(z.literal("")),
+  fitnessGoals: z
+    .string()
+    .trim()
+    .max(1000, "Keep your goals under 1000 characters")
+    .optional()
+    .or(z.literal("")),
+  medicalConditions: z
+    .string()
+    .trim()
+    .max(1000, "Keep medical notes under 1000 characters")
+    .optional()
+    .or(z.literal("")),
+  emergencyContactName: z
+    .string()
+    .trim()
+    .max(120, "Contact name is too long")
+    .optional()
+    .or(z.literal("")),
+  emergencyContactPhone: z
+    .string()
+    .trim()
+    .max(20, "Phone number is too long")
+    .refine(
+      (value) => value === "" || isValidMalaysianPhone(value),
+      "Enter a valid Malaysian phone number",
+    )
+    .optional()
+    .or(z.literal("")),
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Enter your current password"),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Confirm your new password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+  .refine((data) => data.currentPassword !== data.password, {
+    message: "Choose a password different from your current one",
+    path: ["password"],
+  });
+
+export const deleteAccountSchema = z.object({
+  confirmation: z
+    .string()
+    .trim()
+    .refine((value) => value.toUpperCase() === "DELETE", "Type DELETE to confirm"),
+});
+
+/* ---------------- Admin account management schemas ---------------- */
+
+/**
+ * Suspending or reactivating a customer/trainer account.
+ *
+ * A reason is required when suspending so the decision is auditable; it is
+ * cleared automatically on reactivation.
+ */
+export const accountStatusSchema = z
+  .object({
+    profileId: idString("Invalid account"),
+    active: z.boolean(),
+    reason: z
+      .string()
+      .trim()
+      .max(300, "Keep the reason under 300 characters"),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.active && value.reason.length < 3) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["reason"],
+        message: "Give a short reason (at least 3 characters)",
+      });
+    }
+  });
+
+export type AccountStatusValues = z.infer<typeof accountStatusSchema>;
+
+/* ---------------- Facility module schemas ---------------- */
+
+/** HH:MM in 24-hour form, matching the value of `<input type="time">`. */
+const facilityTimeSchema = z
+  .string()
+  .trim()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Pick a valid time");
+
+export const facilitySchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Enter the facility name")
+      .max(120, "Facility name is too long"),
+    facilityType: z
+      .string()
+      .trim()
+      .min(2, "Select or enter a facility type")
+      .max(80, "Facility type is too long"),
+    description: z
+      .string()
+      .trim()
+      .max(600, "Keep the description under 600 characters")
+      .optional()
+      .or(z.literal("")),
+    location: z
+      .string()
+      .trim()
+      .max(120, "Location is too long")
+      .optional()
+      .or(z.literal("")),
+    capacity: z.coerce
+      .number()
+      .int("Capacity must be a whole number")
+      .min(1, "Capacity must be at least 1")
+      .max(5000, "Capacity is too large"),
+    hourlyRate: z.coerce
+      .number()
+      .min(0, "Price per hour must be zero or more")
+      .max(100000, "Price per hour is too large"),
+    openingTime: facilityTimeSchema,
+    closingTime: facilityTimeSchema,
+    status: z.enum(FACILITY_STATUSES, "Select a status"),
+  })
+  .superRefine((value, ctx) => {
+    if (value.openingTime >= value.closingTime) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["closingTime"],
+        message: "Closing time must be after opening time",
+      });
+    }
+  });
+
+export type FacilityFormValues = z.infer<typeof facilitySchema>;
+
+/** Keeps the type list and the form in sync when a legacy type is unknown. */
+export function facilityTypeOptions(current?: string | null): string[] {
+  const options: string[] = [...FACILITY_TYPES];
+  if (current && !options.includes(current)) options.unshift(current);
+  return options;
+}
 
 /* ---------------- Trainer module schemas ---------------- */
 

@@ -116,7 +116,6 @@ type RegisterValues = {
 };
 
 export function RegisterForm() {
-  const [pendingRole, setPendingRole] = React.useState<UserRole>("customer");
   const [result, setResult] = React.useState<AuthActionResult | null>(null);
   const [step, setStep] = React.useState<1 | 2>(1);
   const [dobInvalid, setDobInvalid] = React.useState(false);
@@ -145,7 +144,6 @@ export function RegisterForm() {
   });
 
   const role = form.watch("role");
-  void pendingRole;
 
   const goToStepTwo = async () => {
     setResult(null);
@@ -206,7 +204,12 @@ export function RegisterForm() {
         <>
           <div className="grid gap-2">
             <span className="eyebrow">Account type</span>
-            <RolePicker value={role} compact onChange={(r) => form.setValue("role", r)} />
+            <RolePicker
+              value={role}
+              compact
+              allowAdmin={false}
+              onChange={(r) => form.setValue("role", r)}
+            />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
