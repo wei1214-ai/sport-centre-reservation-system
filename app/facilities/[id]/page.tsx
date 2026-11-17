@@ -10,12 +10,16 @@ import {
   Wrench,
 } from "lucide-react";
 
+import { BookingForm } from "@/components/customer/booking-form";
 import { DeleteFacilityDialog } from "@/components/facilities/delete-facility-dialog";
 import { FacilityDialog } from "@/components/facilities/facility-dialog";
 import { FacilityStatusMenu } from "@/components/facilities/facility-status-menu";
 import { StatusPill } from "@/components/shared/status";
 import { EmptyState, PageHeader, Pill } from "@/components/ui/primitives";
 import { requireActiveProfile } from "@/lib/auth";
+import { bookableHours, getFacilityBusyWindows } from "@/lib/booking";
+import { MAX_BOOKING_HOURS } from "@/lib/constants";
+import { localDatePart } from "@/lib/format";
 import {
   formatOperatingHours,
   formatScheduleWhen,
@@ -55,10 +59,13 @@ function InfoItem({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default async function FacilityDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ date?: string }>;
 }) {
   const { id } = await params;
+  const { date: dateParam } = await searchParams;
   if (!ID_RE.test(id)) notFound();
 
   const profile = await requireActiveProfile();
@@ -74,6 +81,14 @@ export default async function FacilityDetailPage({
 
   const availability = getFacilityAvailability(facility, activeEnd);
   const isAdmin = profile.role === "admin";
+
+  // Customers can book an available facility from this page.
+  const canBook = profile.role === "customer" && facility.status === "available";
+  const today = localDatePart(new Date());
+  const bookingDate =
+    dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) && dateParam >= today ? dateParam : today;
+  const busy = canBook ? await getFacilityBusyWindows(supabase, facility.id, bookingDate) : [];
+  const { openHour, closeHour } = bookableHours(facility.opening_time, facility.closing_time);
 
   const editable = {
     id: facility.id,
@@ -149,6 +164,25 @@ export default async function FacilityDetailPage({
           <StatusPill value={facility.status} />
         </div>
       </div>
+
+      {canBook ? (
+        <section className="grid gap-3">
+          <h2 className="section-title">Book this facility</h2>
+          <div className="max-w-xl">
+            <BookingForm
+              key={bookingDate}
+              facilityId={facility.id}
+              hourlyRate={facility.hourly_rate}
+              date={bookingDate}
+              minDate={today}
+              busy={busy}
+              openHour={openHour}
+              closeHour={closeHour}
+              maxHours={MAX_BOOKING_HOURS}
+            />
+          </div>
+        </section>
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="surface grid content-start gap-4 p-5">

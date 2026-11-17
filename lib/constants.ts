@@ -42,3 +42,13 @@ export const GENDERS = ["Male", "Female"] as const;
 export const USER_ROLES = ["customer", "trainer", "admin"] as const;
 
 export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;
+
+/* ---------------------------- Facility booking ---------------------------- */
+
+export const MAX_BOOKING_HOURS = 3;
+
+export const PAYMENT_METHODS = [
+  "Online Banking (FPX)",
+  "Credit / Debit Card",
+  "E-Wallet",
+] as const;
