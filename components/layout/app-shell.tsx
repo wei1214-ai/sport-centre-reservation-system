@@ -6,7 +6,9 @@ import Link from "next/link";
 import {
   BookMarked,
   Building2,
+  CalendarCheck,
   CalendarRange,
+  Dumbbell,
   ChevronDown,
   ClipboardCheck,
   Home,
@@ -43,7 +45,10 @@ const NAV: Record<UserRole, NavItem[]> = {
   customer: [
     { href: "/customer", label: "Home", icon: Home, exact: true },
     { href: "/facilities", label: "Facilities", icon: Building2 },
+    { href: "/customer/bookings", label: "My bookings", icon: CalendarCheck },
+    { href: "/customer/classes", label: "Classes", icon: Dumbbell },
     { href: "/customer/my-classes", label: "My classes", icon: BookMarked },
+    { href: "/customer/timetable", label: "Timetable", icon: CalendarRange },
     { href: "/customer/inquiries", label: "Inquiries", icon: MessageSquareText },
     { href: "/customer/attendance", label: "Attendance", icon: ClipboardCheck },
     { href: "/customer/announcements", label: "Announcements", icon: Megaphone },
@@ -61,6 +66,7 @@ const NAV: Record<UserRole, NavItem[]> = {
     { href: "/admin", label: "Home", icon: LayoutDashboard, exact: true },
     { href: "/admin/accounts", label: "Accounts", icon: Users },
     { href: "/facilities", label: "Facilities", icon: Building2 },
+    { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   ],
 };
 

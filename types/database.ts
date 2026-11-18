@@ -236,6 +236,9 @@ export interface Database {
           status: BookingStatus;
           booking_reference: string;
           cancellation_reason: string | null;
+          /** Set when an administrator books on behalf of a walk-in customer. */
+          walk_in_name: string | null;
+          walk_in_phone: string | null;
           /** Class this booking serves (null for plain customer bookings). */
           class_id: string | null;
           /** Session this booking reserves the facility for. */

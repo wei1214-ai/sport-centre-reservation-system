@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { requireTrainerRecord, listTrainerSessions } from "@/lib/trainer";
+import { requireTrainerRecord, listTrainerSessions, listCustomerProfileLabels } from "@/lib/trainer";
 import { PageHeader, EmptyState, StatBlock, Pill } from "@/components/ui/primitives";
 import { StatusPill } from "@/components/shared/status";
 import { formatPrice } from "@/lib/utils";
@@ -39,10 +39,15 @@ export default async function ClassDetailPage({
   const enrollmentRes = await supabase
     .schema("public")
     .from("class_enrollments")
-    .select("id, status")
+    .select("id, status, customer_id, enrolled_at")
     .eq("class_id", cls.id)
-    .eq("status", "active");
+    .eq("status", "active")
+    .order("enrolled_at", { ascending: true });
   const students = enrollmentRes.data?.length ?? 0;
+  const participantLabels = await listCustomerProfileLabels(
+    supabase,
+    enrollmentRes.data?.map((e) => e.customer_id) ?? [],
+  );
 
   const [sessions, facilities] = await Promise.all([
     listTrainerSessions(supabase, trainer.id, "upcoming"),
@@ -167,6 +172,35 @@ export default async function ClassDetailPage({
             title="No upcoming sessions"
             description="Schedule the next session to keep this class running."
             action={<SessionDialog mode="create" classes={[{ id: cls.id, title: cls.title, status: cls.status }]} facilities={facilities.map((f) => ({ id: f.id, name: f.name, capacity: f.capacity, hourlyRate: f.hourly_rate }))} defaultClassId={cls.id} triggerLabel="Schedule session" triggerSize="sm" />}
+          />
+        )}
+      </section>
+
+      <section className="grid gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className="section-title">Participants</h2>
+          <Pill tone="neutral">{students} enrolled</Pill>
+        </div>
+        {enrollmentRes.data?.length ? (
+          <div className="grid gap-2.5">
+            {enrollmentRes.data.map((e) => {
+              const person = participantLabels.get(e.customer_id);
+              return (
+                <div key={e.id} className="surface flex items-center justify-between gap-3 px-4 py-3">
+                  <div>
+                    <p className="text-[0.85rem] font-medium text-ink">{person?.full_name ?? "Customer"}</p>
+                    <p className="text-[0.74rem] text-subtle">{person?.email ?? ""}</p>
+                  </div>
+                  <p className="text-[0.74rem] text-subtle">Joined {formatDayLabel(e.enrolled_at)}</p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <EmptyState
+            className="border-dashed"
+            title="No participants yet"
+            description="Customers who enrol in this class will be listed here."
           />
         )}
       </section>
